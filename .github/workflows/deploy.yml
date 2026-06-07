@@ -1,0 +1,74 @@
+name: Export & Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:   # lets you also run it manually from GitHub
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  export-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      # ── 1. Get the code ──────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Download Godot 4.6 ────────────────────────────────────────────────
+      - name: Download Godot
+        run: |
+          GODOT_VER="4.6-stable"
+          GODOT_NAME="Godot_v${GODOT_VER}_linux.x86_64"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VER}/${GODOT_NAME}.zip"
+          unzip -q "${GODOT_NAME}.zip"
+          mv "${GODOT_NAME}" godot
+          chmod +x godot
+
+      # ── 3. Download export templates ─────────────────────────────────────────
+      - name: Download export templates
+        run: |
+          GODOT_VER="4.6-stable"
+          TPL_DIR="$HOME/.local/share/godot/export_templates/4.6.stable"
+          mkdir -p "$TPL_DIR"
+          wget -q "https://github.com/godotengine/godot/releases/download/${GODOT_VER}/Godot_v${GODOT_VER}_export_templates.tpz"
+          mkdir -p tpl_tmp
+          unzip -q "Godot_v${GODOT_VER}_export_templates.tpz" -d tpl_tmp
+          mv tpl_tmp/templates/* "$TPL_DIR/"
+
+      # ── 4. Export the game to HTML5 ──────────────────────────────────────────
+      - name: Export game
+        run: |
+          mkdir -p build/web
+          ./godot --headless --export-release "Web" build/web/index.html
+
+      # ── 5. Fix SharedArrayBuffer (GitHub Pages needs this for Godot 4) ───────
+      #    This tiny service worker tricks the browser into allowing the feature.
+      - name: Add CORS fix
+        run: |
+          wget -q "https://raw.githubusercontent.com/gzuidhof/coi-serviceworker/master/coi-serviceworker.min.js" \
+               -O build/web/coi-serviceworker.min.js
+          # Inject the script tag right before </head>
+          sed -i 's|</head>|<script src="coi-serviceworker.min.js"></script>\n</head>|' build/web/index.html
+
+      # ── 6. Upload the build as a Pages artifact ──────────────────────────────
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+      # ── 7. Deploy to GitHub Pages 🚀 ─────────────────────────────────────────
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
