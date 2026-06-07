@@ -1,0 +1,11 @@
+63f7b34db8d8cdea90c76aacccf841ec
+::res://::1780848608
+human_dead.png::CompressedTexture2D::6764348087532022276::1780848612::1780848795::1::::<><><>0<>0<>2c9fce0d3a58e745f9119678ed5039e2<>res://.godot/imported/human_dead.png-7fc7acfcb41fac101608b446cd34fd58.ctex::
+human_idle.png::CompressedTexture2D::4784193306173836000::1780848612::1780848795::1::::<><><>0<>0<>16dfc63723f768a07fa29720b10c4aa3<>res://.godot/imported/human_idle.png-68707a0e1ae96042ea87c329b91eab3f.ctex::
+human_walk.png::CompressedTexture2D::2972532110209883870::1780848612::1780848795::1::::<><><>0<>0<>51c3db0486d1c7f10e4537cbc5b3da5a<>res://.godot/imported/human_walk.png-0282d5ceb5a8a2d8838155c166394667.ctex::
+Level.gd::GDScript::4631341400199886631::1780848560::0::1::::<>Node2D<><>0<>0<><>::
+Level.tscn::PackedScene::584896020616::1780848140::0::1::::<><><>0<>0<><>::
+Player.gd::GDScript::3081320838044135245::1780848090::0::1::::<>CharacterBody2D<><>0<>0<><>::
+Player.tscn::PackedScene::27365761918488::1780848096::0::1::::<><><>0<>0<><>::res://Player.gd
+Spike.gd::GDScript::3690414432398263960::1780848108::0::1::::<>Area2D<><>0<>0<><>::
+Spike.tscn::PackedScene::968969402576::1780848256::0::1::::<><><>0<>0<><>::
