@@ -5,9 +5,6 @@ const GROUND_Y   : float = 580.0
 const MIN_PLAT_Y : float = 170.0
 const MAX_PLAT_Y : float = 500.0
 
-# Persists between scene reloads — no autoload needed
-static var current_level : int = 1
-
 # ── instance state ───────────────────────────────────────────────────────────────
 var level            : int   = 1
 var rng              : RandomNumberGenerator = RandomNumberGenerator.new()
@@ -22,7 +19,7 @@ var _plat_w : Array[float] = []
 
 # ── entry point ──────────────────────────────────────────────────────────────────
 func _ready() -> void:
-	level = current_level
+	level = PlayerData.current_level
 	rng.seed = level * 73856093
 	_lw = 2000.0 + float(level) * 25.0
 
@@ -36,6 +33,7 @@ func _ready() -> void:
 	_make_finish_line()
 	_spawn_player()
 	_make_hud()
+	_start_music()
 
 # ── SKY ──────────────────────────────────────────────────────────────────────────
 func _make_sky() -> void:
@@ -164,6 +162,11 @@ func _on_finish_reached(body: Node) -> void:
 		return
 	body.set_physics_process(false)
 
+	# Update and save high score
+	if level >= PlayerData.best_level:
+		PlayerData.best_level = mini(level + 1, 100)
+		PlayerData.save()
+
 	var overlay : ColorRect = ColorRect.new()
 	overlay.color    = Color(0.0, 0.0, 0.0, 0.55)
 	overlay.size     = Vector2(1152.0, 648.0)
@@ -215,7 +218,7 @@ func _on_finish_reached(body: Node) -> void:
 
 func _process(_delta: float) -> void:
 	if _waiting_restart and Input.is_action_just_pressed("jump"):
-		current_level = (level + 1) if _go_to_next else 1
+		PlayerData.current_level = (level + 1) if _go_to_next else 1
 		get_tree().reload_current_scene()
 
 # ── PLAYER ───────────────────────────────────────────────────────────────────────
@@ -282,3 +285,13 @@ func _add_platform(cx: float, cy: float, w: float, h: float, color: Color) -> vo
 	vis.position = Vector2(-w * 0.5, -h * 0.5)
 	body.add_child(vis)
 	add_child(body)
+
+# ── MUSIC ─────────────────────────────────────────────────────────────────────
+func _start_music() -> void:
+	var stream : AudioStreamWAV = load("res://music_bg.wav")
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	var player : AudioStreamPlayer = AudioStreamPlayer.new()
+	player.stream      = stream
+	player.volume_db   = -6.0
+	add_child(player)
+	player.play()

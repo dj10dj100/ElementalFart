@@ -9,6 +9,7 @@ var direction    := 1
 var walk_time    := 0.0
 
 func _ready() -> void:
+	add_to_group("enemies")   # lets fart balls find us!
 	# Kill the player when they touch us
 	$HurtArea.body_entered.connect(func(body: Node) -> void:
 		if body.has_method("die"):
